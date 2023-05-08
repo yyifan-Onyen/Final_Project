@@ -11,7 +11,7 @@ conda activate barf-env
 ---------------------------------------------------------------------------------------
 ### Dataset
 we using the dataset can be found in the link (https://drive.google.com/drive/folders/128yBriW1IG_3NJ5Rp7APSTZsJqdJdfc1)
-
+DAE.ipynb is used to generate the noise and denoise
 
 ---------------------------------------------------------------------------------------
 ### Running the code
