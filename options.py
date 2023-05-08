@@ -9,10 +9,6 @@ from easydict import EasyDict as edict
 import util
 from util import log
 
-# torch.backends.cudnn.enabled = False
-# torch.backends.cudnn.benchmark = False
-# torch.backends.cudnn.deterministic = True
-
 def parse_arguments(args):
     """
     Parse arguments from command line.
