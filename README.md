@@ -3,29 +3,89 @@
 ---------------------------------------------------------------------------------------
 ### Prerequsite
 This code is developed with Python3 (`python3`). PyTorch 1.9+ is required. 
-
+Using the below code to create the environment required for our project.
 ```bash
 conda env create --file requirements.yaml python=3
 conda activate barf-env
 ```
+---------------------------------------------------------------------------------------
+###Dataset
+we using the dataset can be found in the link (https://drive.google.com/drive/folders/128yBriW1IG_3NJ5Rp7APSTZsJqdJdfc1)
+
+
+---------------------------------------------------------------------------------------
+###Running the code
+- #### BARF models
+  To train and evaluate BARF:
+  ```bash
+  # <GROUP> and <NAME> can be set to your likes, while <SCENE> is specific to datasets
+  
+  # Blender (<SCENE>={chair,drums,ficus,hotdog,lego,materials,mic,ship})
+  python3 train.py --group=<GROUP> --model=barf --yaml=barf_blender --name=<NAME> --data.scene=<SCENE> --barf_c2f=[0.1,0.5]
+  python3 evaluate.py --group=<GROUP> --model=barf --yaml=barf_blender --name=<NAME> --data.scene=<SCENE> --data.val_sub= --resume
+  
+  # LLFF (<SCENE>={fern,flower,fortress,horns,leaves,orchids,room,trex})
+  python3 train.py --group=<GROUP> --model=barf --yaml=barf_llff --name=<NAME> --data.scene=<SCENE> --barf_c2f=[0.1,0.5]
+  python3 evaluate.py --group=<GROUP> --model=barf --yaml=barf_llff --name=<NAME> --data.scene=<SCENE> --resume
+  ```
+  All the results will be stored in the directory `output/<GROUP>/<NAME>`.
+  You may want to organize your experiments by grouping different runs in the same group.
+
+  To train baseline models:
+  - Full positional encoding: omit the `--barf_c2f` argument.
+  - No positional encoding: add `--arch.posenc!`.
+  
+  If you want to evaluate a checkpoint at a specific iteration number, use `--resume=<ITER_NUMBER>` instead of just `--resume`.
+
+- #### Training the original NeRF
+  If you want to train the reference NeRF models (assuming known camera poses):
+  ```bash
+  # Blender
+  python3 train.py --group=<GROUP> --model=nerf --yaml=nerf_blender --name=<NAME> --data.scene=<SCENE>
+  python3 evaluate.py --group=<GROUP> --model=nerf --yaml=nerf_blender --name=<NAME> --data.scene=<SCENE> --data.val_sub= --resume
+  
+  # LLFF
+  python3 train.py --group=<GROUP> --model=nerf --yaml=nerf_llff --name=<NAME> --data.scene=<SCENE>
+  python3 evaluate.py --group=<GROUP> --model=nerf --yaml=nerf_llff --name=<NAME> --data.scene=<SCENE> --resume
+  ```
+  If you wish to replicate the results from the original NeRF paper, use `--yaml=nerf_blender_repr` or `--yaml=nerf_llff_repr` instead for Blender or LLFF respectively.
+  There are some differences, e.g. NDC will be used for the LLFF forward-facing dataset.
+  (The reference NeRF models considered in the paper do not use NDC to parametrize the 3D points.)
+
+- #### Planar image alignment experiment
+  If you want to try the planar image alignment experiment, run:
+  ```bash
+  python3 train.py --group=<GROUP> --model=planar --yaml=planar --name=<NAME> --seed=3 --barf_c2f=[0,0.4]
+  ```
+  This will fit a neural image representation to a single image (default to `data/cat.jpg`), which takes a couple of minutes to optimize on a modern GPU.
+  The seed number is set to reproduce the pre-generated warp perturbations in the paper.
+  For the baseline methods, modify the arguments similarly as in the NeRF case above:
+  - Full positional encoding: omit the `--barf_c2f` argument.
+  - No positional encoding: add `--arch.posenc!`.
+
+  A video `vis.mp4` will also be created to visualize the optimization process.
+
+- #### Visualizing the results
+  We have included code to visualize the training over TensorBoard and Visdom.
+  The TensorBoard events include the following:
+  - **SCALARS**: the rendering losses and PSNR over the course of optimization. For BARF, the rotational/translational errors with respect to the given poses are also computed.
+  - **IMAGES**: visualization of the RGB images and the RGB/depth rendering.
+  
+  We also provide visualization of 3D camera poses in Visdom.
+  Run `visdom -port 9000` to start the Visdom server.  
+  The Visdom host server is default to `localhost`; this can be overridden with `--visdom.server` (see `options/base.yaml` for details).
+  If you want to disable Visdom visualization, add `--visdom!`.
+
+  The `extract_mesh.py` script provides a simple way to extract the underlying 3D geometry using marching cubes. Run as follows:
+  ```bash
+  python3 extract_mesh.py --group=<GROUP> --model=barf --yaml=barf_blender --name=<NAME> --data.scene=<SCENE> --data.val_sub= --resume
+  ```
+  This works for both BARF and the original NeRF (by modifying the command line accordingly). This is currently supported only for the Blender dataset.
 
 
 ---------------------------------------------------------------------------------------
 
-
-
-
-
-
-
----------------------------------------------------------------------------------------
-
-
-
-
----------------------------------------------------------------------------------------
-
-
+###
 
 
 
